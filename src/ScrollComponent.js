@@ -9,84 +9,81 @@ class ScrollComponent extends Component {
       loading: false,
       page: 1,
       prevY: 0,
-      pages:1
+      pages: 1
     };
   }
   componentDidMount() {
-    this.getPhotos(this.state.page);
+    this.getPosts(this.state.page);
     var options = {
-        root: null,
-        rootMargin: "0px",
-        threshold: 1.0
-      };
-      
-      this.observer = new IntersectionObserver(
-        this.handleObserver.bind(this),
-        options
-      );
-      this.observer.observe(this.loadingRef);
+      root: null,
+      rootMargin: "0px",
+      threshold: 1.0
+    };
+
+    this.observer = new IntersectionObserver(
+      this.handleObserver.bind(this),
+      options
+    );
+    this.observer.observe(this.loadingRef);
   }
   handleObserver(entities, observer) {
     const y = entities[0].boundingClientRect.y;
     if (this.state.prevY > y) {
-      const lastPhoto = this.state.photos[this.state.photos.length - 1];
-      const curPage =this.state.page+1;
-      if(curPage > this.state.pages)
-      {
+      const curPage = this.state.page + 1;
+      if (curPage > this.state.pages) {
         this.setState({ loading: false });
       }
-      else
-      {
-      this.getPhotos(curPage);
-      this.setState({ page: curPage });
+      else {
+        this.getPosts(curPage);
+        this.setState({ page: curPage });
       }
     }
     this.setState({ prevY: y });
   }
 
-  
- getPhotos(page) {
-  this.setState({ loading: true });
-  axios
-    .get(
-      `https://gorest.co.in/public/v1/posts?page=${page}`
-    )
-    .then(res => {
-      
-      this.setState({ photos: [...this.state.photos, ...res.data.data] ,pages:res.data.pages});
-      this.setState({ loading: false });
-    });
-}
-render() {
 
-  // Additional css
-  const loadingCSS = {
-    height: "100px",
-    margin: "30px"
-  };
+  getPosts(page) {
+    this.setState({ loading: true });
+    axios
+      .get(
+        `https://gorest.co.in/public/v1/posts?page=${page}`
+      )
+      .then(res => {
 
-  // To change the loading icon behavior
-  const loadingTextCSS = { display: this.state.loading ? "block" : "none" };
+        this.setState({ photos: [...this.state.photos, ...res.data.data], pages: res.data.pages });
+        this.setState({ loading: false });
+      });
+  }
+  render() {
 
-  return (
-    <div className="container">
-      <div >
-        {this.state.photos.map(user => (
-          <div>
-          <h1  height="100px" width="200px" >{user.title}</h1>
-          <p  >{user.body}</p>
-          </div>
-        ))}
+    // Additional css
+    const loadingCSS = {
+      height: "100px",
+      margin: "30px"
+    };
+
+    // To change the loading icon behavior
+    const loadingTextCSS = { display: this.state.loading ? "block" : "none" };
+
+    return (
+      <div className="container">
+        <div >
+          {this.state.photos.map(user => (
+            <div key={user.id}>
+              <h1 height="100px" width="200px" >{user.title}</h1>
+              <p  >{user.body}</p>
+            </div>
+          ))}
+        </div>
+        <div
+          ref={loadingRef => (this.loadingRef = loadingRef)}
+          style={loadingCSS}
+        >
+          <span style={loadingTextCSS}>Loading...</span>
+        </div>
       </div>
-      <div
-        ref={loadingRef => (this.loadingRef = loadingRef)}
-        style={loadingCSS}
-      >
-        <span style={loadingTextCSS}>Loading...</span>
-      </div>
-    </div>
-  );
-}
+    );
+  }
 }
 
 export default ScrollComponent;
